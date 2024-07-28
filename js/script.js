@@ -52,7 +52,7 @@ function chart(parameters) {
 
 
 
-
+/* 
 
 const countryNameMapping = {
     "United States": "United States of America",
@@ -84,7 +84,7 @@ const countryNameMapping = {
     "Micronesia": "Micronesia (Federated States of)",
     "Palestine": "Palestine, State of"
 };
-
+ */
 
 // Define the tooltip
 const tooltip = d3.select('body').append('div')
@@ -92,7 +92,7 @@ const tooltip = d3.select('body').append('div')
     .style('opacity', 0);
 
 
-// Render the world map
+/* // Render the world map
 function renderWorldMap(svg, parameters) {
     d3.json('https://d3js.org/world-110m.v1.json').then(world => {
         const countries = topojson.feature(world, world.objects.countries).features;
@@ -143,10 +143,10 @@ function renderWorldMap(svg, parameters) {
                     .style('opacity', 0);
             });
     });
-}
+} */
 
 function renderScatterPlot(svg, parameters, plotWidth, plotHeight) {
-    const margin = { top: 40, right: 40, bottom: 70, left: 70 };
+    const margin = { top: 60, right: 40, bottom: 80, left: 90 };
     const width = plotWidth - margin.left - margin.right;
     const height = plotHeight - margin.top - margin.bottom;
 
@@ -194,7 +194,7 @@ function renderScatterPlot(svg, parameters, plotWidth, plotHeight) {
 
     // Add axis labels
     svg.append('text')
-        .attr('transform', `translate(${margin.left + width / 2}, ${margin.top + height + 40})`)
+        .attr('transform', `translate(${margin.left + width / 2}, ${plotHeight - 10})`)
         .style('text-anchor', 'middle')
         .text(parameters.xLabel);
 
@@ -214,6 +214,7 @@ function renderScatterPlot(svg, parameters, plotWidth, plotHeight) {
         .style('font-weight', 'bold')
         .text(parameters.title);
 }
+
 function renderLineChart(svg, parameters, plotWidth, plotHeight) {
     const margin = { top: 40, right: 40, bottom: 70, left: 70 };
     const width = plotWidth - margin.left - margin.right;
@@ -274,22 +275,7 @@ function renderLineChart(svg, parameters, plotWidth, plotHeight) {
 function initializeScenes(dataByYear) {
     scenes = [
         {
-            title: 'Scene 1: Global Happiness Overview (2023)',
-            type: 'map',
-            data: dataByYear[2023],
-            annotation: 'This map shows the happiness scores across the world in 2023.',
-            annotationX: 200,
-            annotationY: 400,
-            title: 'Scene 1: Global Happiness Overview',
-        textBoxes: [
-            "This map provides an overview of global happiness scores.",
-            "Each country is colored based on its happiness score, with higher scores indicating greater happiness.",
-            "Use this map to identify trends and patterns in happiness across different regions of the world.",
-            "Countries with higher happiness scores are often characterized by strong social support, freedom, and healthy life expectancy."
-        ]
-        },
-        {
-            title: 'Scene 2: GDP per Capita vs. Happiness Score (2023)',
+            title: 'Scene 1: GDP per Capita vs. Happiness Score (2023)',
             type: 'scatter',
             data: dataByYear[2023],
             x: 'gdp_per_capita',
@@ -299,7 +285,7 @@ function initializeScenes(dataByYear) {
             annotation: 'This scatter plot shows the relationship between GDP per capita and happiness score in 2023.',
             annotationX: 300,
             annotationY: 300,
-            title: 'Scene 2: GDP per Capita vs. Happiness Score (2023)',
+            title: 'Scene 1: GDP per Capita vs. Happiness Score (2023)',
         textBoxes: [
             "This scatter plot shows the relationship between GDP per capita and happiness score in 2023.",
             "Each point represents a country, with its position on the horizontal axis showing its GDP per capita and its position on the vertical axis showing its happiness score.",
@@ -307,7 +293,7 @@ function initializeScenes(dataByYear) {
         ]
         },
         {
-            title: 'Scene 3: Social Support vs. Happiness Score (2023)',
+            title: 'Scene 2: Social Support vs. Happiness Score (2023)',
             type: 'scatter',
             data: dataByYear[2023],
             x: 'social_support',
@@ -317,7 +303,7 @@ function initializeScenes(dataByYear) {
             annotation: 'This scatter plot shows the relationship between social support and happiness score in 2023.',
             annotationX: 300,
             annotationY: 300,
-            title: 'Scene 3: Social Support vs. Happiness Score (2023)',
+            title: 'Scene 2: Social Support vs. Happiness Score (2023)',
         textBoxes: [
             "This scatter plot shows the relationship between social support and happiness score in 2023.",
             "Each point represents a country, with its position on the horizontal axis showing its social support and its position on the vertical axis showing its happiness score.",
@@ -326,7 +312,7 @@ function initializeScenes(dataByYear) {
 
         },
         {
-            title: 'Scene 4: Healthy Life Expectancy vs. Happiness Score (2023)',
+            title: 'Scene 3: Healthy Life Expectancy vs. Happiness Score (2023)',
             type: 'scatter',
             data: dataByYear[2023],
             x: 'healthy_life_expectancy',
@@ -336,7 +322,7 @@ function initializeScenes(dataByYear) {
             annotation: 'This scatter plot shows the relationship between healthy life expectancy and happiness score in 2023.',
             annotationX: 300,
             annotationY: 300,
-            title: 'Scene 4: Healthy Life Expectancy vs. Happiness Score (2023)',
+            title: 'Scene 3: Healthy Life Expectancy vs. Happiness Score (2023)',
         textBoxes: [
             "This scatter plot shows the relationship between healthy life expectancy and happiness score in 2023.",
             "Each point represents a country, with its position on the horizontal axis showing its healthy life expectancy and its position on the vertical axis showing its happiness score.",
@@ -344,7 +330,7 @@ function initializeScenes(dataByYear) {
         ]
         },
         {
-            title: 'Scene 5: Freedom to Make Life Choices vs. Happiness Score (2023)',
+            title: 'Scene 4: Freedom to Make Life Choices vs. Happiness Score (2023)',
             type: 'scatter',
             data: dataByYear[2023],
             x: 'freedom_to_make_life_choices',
@@ -354,7 +340,7 @@ function initializeScenes(dataByYear) {
             annotation: 'This scatter plot shows the relationship between freedom to make life choices and happiness score in 2023.',
             annotationX: 300,
             annotationY: 300,
-            title: 'Scene 5: Freedom to Make Life Choices vs. Happiness Score (2023)',
+            title: 'Scene 4: Freedom to Make Life Choices vs. Happiness Score (2023)',
         textBoxes: [
             "This scatter plot shows the relationship between freedom to make life choices and happiness score in 2023.",
             "Each point represents a country, with its position on the horizontal axis showing its freedom to make life choices and its position on the vertical axis showing its happiness score.",
@@ -362,7 +348,7 @@ function initializeScenes(dataByYear) {
         ]
         },
         {
-            title: 'Scene 6: Happiness Scores Over Time (2015-2023)',
+            title: 'Scene 5: Happiness Scores Over Time (2015-2023)',
             type: 'line',
             data: Object.keys(dataByYear).map(year => ({
                 year: new Date(year, 0, 1),
@@ -371,7 +357,7 @@ function initializeScenes(dataByYear) {
             annotation: 'This line chart shows the changes in average happiness scores over time from 2015 to 2023.',
             annotationX: 300,
             annotationY: 300,
-            title: 'Scene 6: Happiness Scores Over Time (2015-2023)',
+            title: 'Scene 5: Happiness Scores Over Time (2015-2023)',
         textBoxes: [
             "This line chart shows the changes in average happiness scores over time from 2015 to 2023.",
             "The horizontal axis represents the years, while the vertical axis represents the average happiness score.",
@@ -431,6 +417,3 @@ function resizeChart() {
 }
 
 window.addEventListener('resize', resizeChart);
-
-
-
