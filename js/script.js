@@ -5,12 +5,11 @@ function chart(parameters) {
     d3.select('#visualization').html('');
     const svg = d3.select('#visualization')
         .append('svg')
-        .attr('width', 1000)
-        .attr('height', 800)
+        .attr('width', '100%')
+        .attr('height', '600px')
+        .attr('viewBox', '0 0 1000 600')
         .append('g')
         .attr('transform', 'translate(50, 50)');
-
-    console.log('Chart Parameters:', parameters);
 
     if (parameters.type === 'bar') {
         renderBarChart(svg, parameters);
@@ -171,7 +170,7 @@ function prevScene() {
     }
 }
 
-// Load data and initialize scenes
+// load data and initialize scenes
 d3.csv('data/WHR_2023.csv').then(data => {
     console.log('Data Loaded:', data);
 
@@ -225,3 +224,12 @@ document.getElementById('previous').addEventListener('click', () => {
     console.log('Previous button clicked');
     prevScene();
 });
+
+function resizeChart() {
+    const width = document.getElementById('visualization').clientWidth;
+    d3.select('#visualization svg')
+      .attr('width', width)
+      .attr('height', width * 0.6);
+}
+
+window.addEventListener('resize', resizeChart);
