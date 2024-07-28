@@ -16,7 +16,8 @@ function prevScene() {
 function chart(parameters) {
     d3.select('#visualization').html('');
     const plotWidth = d3.select('#visualization').node().getBoundingClientRect().width;
-    const plotHeight = plotWidth * 0.6;
+    const plotHeight = 400; // Fixed height of 400px
+
     const svg = d3.select('#visualization')
         .append('svg')
         .attr('width', plotWidth)
@@ -315,12 +316,11 @@ document.getElementById('previous').addEventListener('click', prevScene);
 
 function resizeChart() {
     const plotWidth = document.getElementById('visualization').clientWidth;
-    const plotHeight = plotWidth * 0.6;
+    const plotHeight = 400; // Fixed height of 400px
     d3.select('#visualization svg')
         .attr('width', plotWidth)
         .attr('height', plotHeight);
     
-    // Redraw the current scene
     if (scenes && scenes[currentScene]) {
         chart(scenes[currentScene]);
     }
