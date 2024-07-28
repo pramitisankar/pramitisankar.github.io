@@ -1,1 +1,3 @@
-node_modules\n*.log\n*.tmp
+node_modules
+*.log
+*.tmp
