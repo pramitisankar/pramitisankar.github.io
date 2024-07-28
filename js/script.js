@@ -1,6 +1,37 @@
 let currentScene = 0;
 let scenes = [];
 
+const countryNameMapping = {
+    "United States": "United States of America",
+    "Russia": "Russian Federation",
+    "South Korea": "Korea, Republic of",
+    "North Korea": "Korea, Democratic People's Republic of",
+    "Czech Republic": "Czechia",
+    "Ivory Coast": "Côte d'Ivoire",
+    "Venezuela": "Venezuela (Bolivarian Republic of)",
+    "Tanzania": "Tanzania, United Republic of",
+    "Syria": "Syrian Arab Republic",
+    "Laos": "Lao People's Democratic Republic",
+    "Vietnam": "Viet Nam",
+    "Bolivia": "Bolivia (Plurinational State of)",
+    "Brunei": "Brunei Darussalam",
+    "Moldova": "Republic of Moldova",
+    "Swaziland": "Eswatini",
+    "Iran": "Iran (Islamic Republic of)",
+    "United Kingdom": "United Kingdom of Great Britain and Northern Ireland",
+    "Cape Verde": "Cabo Verde",
+    "Congo (Kinshasa)": "Democratic Republic of the Congo",
+    "Congo (Brazzaville)": "Republic of the Congo",
+    "Slovakia": "Slovak Republic",
+    "Libya": "Libya",
+    "Sao Tome and Principe": "São Tomé and Príncipe",
+    "St. Kitts and Nevis": "Saint Kitts and Nevis",
+    "St. Lucia": "Saint Lucia",
+    "St. Vincent and the Grenadines": "Saint Vincent and the Grenadines",
+    "Micronesia": "Micronesia (Federated States of)",
+    "Palestine": "Palestine, State of"
+};
+
 function chart(parameters) {
     d3.select('#visualization').html('');
     const svg = d3.select('#visualization')
@@ -11,12 +42,12 @@ function chart(parameters) {
         .append('g')
         .attr('transform', 'translate(50, 50)');
 
-    if (parameters.type === 'bar') {
-        renderBarChart(svg, parameters);
+    if (parameters.type === 'map') {
+        renderWorldMap(svg, parameters);
     } else if (parameters.type === 'scatter') {
         renderScatterPlot(svg, parameters);
-    } else if (parameters.type === 'grouped-bar') {
-        renderGroupedBarChart(svg, parameters);
+    } else if (parameters.type === 'line') {
+        renderLineChart(svg, parameters);
     }
 
     if (parameters.annotation) {
@@ -34,78 +65,97 @@ function chart(parameters) {
     }
 }
 
-function renderBarChart(svg, parameters) {
-    const x = d3.scaleBand()
-        .domain(parameters.data.map(d => d.country))
-        .range([0, 900])
-        .padding(0.1);
+// tooltips
+const tooltip = d3.select('body').append('div')
+    .attr('class', 'tooltip')
+    .style('opacity', 0);
 
-    const y = d3.scaleLinear()
-        .domain([0, d3.max(parameters.data, d => d.happiness_score)])
-        .range([700, 0]);
+function renderWorldMap(svg, parameters) {
+    d3.json('https://d3js.org/world-110m.v1.json').then(world => {
+        const countries = topojson.feature(world, world.objects.countries).features;
 
-    svg.selectAll('.bar')
-        .data(parameters.data)
-        .enter()
-        .append('rect')
-        .attr('class', 'bar')
-        .attr('x', d => x(d.country))
-        .attr('y', d => y(d.happiness_score))
-        .attr('width', x.bandwidth())
-        .attr('height', d => 700 - y(d.happiness_score))
-        .style('fill', 'steelblue')
-        .on('mouseover', function(event, d) {
-            d3.select(this).style('fill', 'darkorange');
-            tooltip.transition()
-                .duration(200)
-                .style('opacity', .9);
-            tooltip.html(`Country: ${d.country}<br/>Score: ${d.happiness_score}`)
-                .style('left', (event.pageX) + 'px')
-                .style('top', (event.pageY - 28) + 'px');
-        })
-        .on('mouseout', function(d) {
-            d3.select(this).style('fill', 'steelblue');
-            tooltip.transition()
-                .duration(500)
-                .style('opacity', 0);
-        });
+        const projection = d3.geoMercator()
+            .scale(150)
+            .translate([500, 300]);
 
-    svg.append('g')
-        .attr('transform', 'translate(0, 700)')
-        .call(d3.axisBottom(x));
+        const path = d3.geoPath().projection(projection);
 
-    svg.append('g')
-        .call(d3.axisLeft(y));
+        const colorScale = d3.scaleSequential(d3.interpolateViridis)
+            .domain([0, d3.max(parameters.data, d => d.happiness_score)]);
+
+        svg.append('g')
+            .selectAll('path')
+            .data(countries)
+            .enter()
+            .append('path')
+            .attr('d', path)
+            .attr('fill', d => {
+                let countryName = d.properties.name || d.properties.ADMIN || d.properties.admin;
+                countryName = countryNameMapping[countryName] || countryName;
+                const country = parameters.data.find(c => c.Country === countryName);
+                if (!country) {
+                    console.log('No match for:', countryName);
+                } else {
+                    console.log('Match found:', countryName, country.happiness_score);
+                }
+                return country ? colorScale(country.happiness_score) : '#ccc';
+            })
+            .attr('stroke', '#999')
+            .on('mouseover', function(event, d) {
+                let countryName = d.properties.name || d.properties.ADMIN || d.properties.admin;
+                countryName = countryNameMapping[countryName] || countryName;
+                const country = parameters.data.find(c => c.Country === countryName);
+                if (country) {
+                    d3.select(this).attr('fill', 'darkorange');
+                    tooltip.transition()
+                        .duration(200)
+                        .style('opacity', .9);
+                    tooltip.html(`Country: ${country.Country}<br/>Happiness Score: ${country.happiness_score}`)
+                        .style('left', (event.pageX) + 'px')
+                        .style('top', (event.pageY - 28) + 'px');
+                }
+            })
+            .on('mouseout', function(event, d) {
+                let countryName = d.properties.name || d.properties.ADMIN || d.properties.admin;
+                countryName = countryNameMapping[countryName] || countryName;
+                const country = parameters.data.find(c => c.Country === countryName);
+                d3.select(this).attr('fill', country ? colorScale(country.happiness_score) : '#ccc');
+                tooltip.transition()
+                    .duration(500)
+                    .style('opacity', 0);
+            });
+    });
 }
+
 
 function renderScatterPlot(svg, parameters) {
     const x = d3.scaleLinear()
-        .domain(d3.extent(parameters.data, d => d.gdp_per_capita))
+        .domain(d3.extent(parameters.data, d => d[parameters.x]))
         .range([0, 900]);
 
     const y = d3.scaleLinear()
-        .domain([0, d3.max(parameters.data, d => d.happiness_score)])
+        .domain([0, d3.max(parameters.data, d => d[parameters.y])])
         .range([700, 0]);
 
     svg.selectAll('circle')
         .data(parameters.data)
         .enter()
         .append('circle')
-        .attr('cx', d => x(d.gdp_per_capita))
-        .attr('cy', d => y(d.happiness_score))
+        .attr('cx', d => x(d[parameters.x]))
+        .attr('cy', d => y(d[parameters.y]))
         .attr('r', 5)
-        .style('fill', 'steelblue')
+        .style('fill', 'darkorange')
         .on('mouseover', function(event, d) {
-            d3.select(this).style('fill', 'darkorange');
+            d3.select(this).style('fill', '#ccc');
             tooltip.transition()
                 .duration(200)
                 .style('opacity', .9);
-            tooltip.html(`Country: ${d.country}<br/>GDP: ${d.gdp_per_capita}<br/>Score: ${d.happiness_score}`)
+            tooltip.html(`Country: ${d.country}<br/>${parameters.xLabel}: ${d[parameters.x]}<br/>${parameters.yLabel}: ${d[parameters.y]}`)
                 .style('left', (event.pageX) + 'px')
                 .style('top', (event.pageY - 28) + 'px');
         })
         .on('mouseout', function(d) {
-            d3.select(this).style('fill', 'steelblue');
+            d3.select(this).style('fill', 'darkorange');
             tooltip.transition()
                 .duration(500)
                 .style('opacity', 0);
@@ -119,86 +169,32 @@ function renderScatterPlot(svg, parameters) {
         .call(d3.axisLeft(y));
 }
 
-function renderGroupedBarChart(svg, parameters) {
-    const factors = ['gdp_per_capita', 'social_support', 'healthy_life_expectancy', 'freedom_to_make_life_choices', 'generosity', 'perceptions_of_corruption'];
-    const factorNames = {
-        'gdp_per_capita': 'GDP per Capita',
-        'social_support': 'Social Support',
-        'healthy_life_expectancy': 'Healthy Life Expectancy',
-        'freedom_to_make_life_choices': 'Freedom to Make Life Choices',
-        'generosity': 'Generosity',
-        'perceptions_of_corruption': 'Perceptions of Corruption'
-    };
-
-    const x0 = d3.scaleBand()
-        .domain(parameters.data.map(d => d.country))
-        .range([0, 900])
-        .padding(0.1);
-
-    const x1 = d3.scaleBand()
-        .domain(factors)
-        .range([0, x0.bandwidth()])
-        .padding(0.05);
+function renderLineChart(svg, parameters) {
+    const x = d3.scaleTime()
+        .domain(d3.extent(parameters.data, d => d.year))
+        .range([0, 900]);
 
     const y = d3.scaleLinear()
-        .domain([0, d3.max(parameters.data, d => d3.max(factors, key => d[key]))])
+        .domain([0, d3.max(parameters.data, d => d.happiness_score)])
         .range([700, 0]);
 
-    svg.append('g')
-        .selectAll('g')
-        .data(parameters.data)
-        .enter()
-        .append('g')
-        .attr('transform', d => `translate(${x0(d.country)},0)`)
-        .selectAll('rect')
-        .data(d => factors.map(key => ({ key: key, value: d[key] })))
-        .enter()
-        .append('rect')
-        .attr('x', d => x1(d.key))
-        .attr('y', d => y(d.value))
-        .attr('width', x1.bandwidth())
-        .attr('height', d => 700 - y(d.value))
-        .attr('fill', d => d3.schemeCategory10[factors.indexOf(d.key)])
-        .on('mouseover', function(event, d) {
-            d3.select(this).style('fill', 'darkorange');
-            tooltip.transition()
-                .duration(200)
-                .style('opacity', .9);
-            tooltip.html(`${factorNames[d.key]}: ${d.value}`)
-                .style('left', (event.pageX) + 'px')
-                .style('top', (event.pageY - 28) + 'px');
-        })
-        .on('mouseout', function(d) {
-            d3.select(this).style('fill', d3.schemeCategory10[factors.indexOf(d.key)]);
-            tooltip.transition()
-                .duration(500)
-                .style('opacity', 0);
-        });
+    const line = d3.line()
+        .x(d => x(d.year))
+        .y(d => y(d.happiness_score));
+
+    svg.append('path')
+        .datum(parameters.data)
+        .attr('fill', 'none')
+        .attr('stroke', 'darkorange')
+        .attr('stroke-width', 1.5)
+        .attr('d', line);
 
     svg.append('g')
         .attr('transform', 'translate(0, 700)')
-        .call(d3.axisBottom(x0));
+        .call(d3.axisBottom(x));
 
     svg.append('g')
         .call(d3.axisLeft(y));
-
-    const legend = svg.append('g')
-        .attr('transform', 'translate(900,100)');
-
-    factors.forEach((factor, i) => {
-        legend.append('rect')
-            .attr('x', 0)
-            .attr('y', i * 20)
-            .attr('width', 10)
-            .attr('height', 10)
-            .attr('fill', d3.schemeCategory10[i]);
-
-        legend.append('text')
-            .attr('x', 20)
-            .attr('y', i * 20 + 9)
-            .text(factorNames[factor])
-            .style('text-anchor', 'start');
-    });
 }
 
 function nextScene() {
@@ -215,57 +211,100 @@ function prevScene() {
     }
 }
 
-// Tooltips
-const tooltip = d3.select('body').append('div')
-    .attr('class', 'tooltip')
-    .style('position', 'absolute')
-    .style('text-align', 'center')
-    .style('width', '120px')
-    .style('height', '28px')
-    .style('padding', '2px')
-    .style('font', '12px sans-serif')
-    .style('background', 'lightsteelblue')
-    .style('border', '0px')
-    .style('border-radius', '8px')
-    .style('pointer-events', 'none')
-    .style('opacity', 0);
-
 // Load data and initialize scenes
-d3.csv('data/WHR_2023.csv').then(data => {
-    data.forEach(d => {
-        d.happiness_score = +d.happiness_score;
-        d.gdp_per_capita = +d.gdp_per_capita;
-        d.social_support = +d.social_support;
-        d.healthy_life_expectancy = +d.healthy_life_expectancy;
-        d.freedom_to_make_life_choices = +d.freedom_to_make_life_choices;
-        d.generosity = +d.generosity;
-        d.perceptions_of_corruption = +d.perceptions_of_corruption;
+Promise.all([
+    d3.csv('data/WHR_2023.csv'),
+    d3.csv('data/WHR_2022.csv'),
+    d3.csv('data/WHR_2021.csv'),
+    d3.csv('data/WHR_2020.csv'),
+    d3.csv('data/WHR_2019.csv'),
+    d3.csv('data/WHR_2018.csv'),
+    d3.csv('data/WHR_2017.csv'),
+    d3.csv('data/WHR_2016.csv'),
+    d3.csv('data/WHR_2015.csv')
+]).then(datasets => {
+    const dataByYear = {};
+    datasets.forEach((data, i) => {
+        data.forEach(d => {
+            d.happiness_score = +d.happiness_score;
+            d.gdp_per_capita = +d.gdp_per_capita;
+            d.social_support = +d.social_support;
+            d.healthy_life_expectancy = +d.healthy_life_expectancy;
+            d.freedom_to_make_life_choices = +d.freedom_to_make_life_choices;
+            d.generosity = +d.generosity;
+            d.perceptions_of_corruption = +d.perceptions_of_corruption;
+        });
+        dataByYear[2015 + i] = data;
+        console.log('Data for year', 2015 + i, data);
     });
 
     scenes = [
         {
-            title: 'Scene 1: Happiness Scores of Top Countries in 2023',
-            type: 'bar',
-            data: data.slice(0, 10),
-            annotation: 'This shows the happiness scores of the top 10 countries in 2023.',
+            title: 'Scene 1: Global Happiness Overview (2023)',
+            type: 'map',
+            data: dataByYear[2023],
+            annotation: 'This map shows the happiness scores across the world in 2023.',
             annotationX: 200,
             annotationY: 400
         },
         {
-            title: 'Scene 2: Correlation Between GDP per Capita and Happiness Score',
+            title: 'Scene 2: GDP per Capita vs. Happiness Score (2023)',
             type: 'scatter',
-            data: data.slice(0, 50),
-            annotation: 'This shows the correlation between GDP per capita and happiness score for 50 countries.',
+            data: dataByYear[2023],
+            x: 'gdp_per_capita',
+            y: 'happiness_score',
+            xLabel: 'GDP per Capita',
+            yLabel: 'Happiness Score',
+            annotation: 'This scatter plot shows the relationship between GDP per capita and happiness score in 2023.',
             annotationX: 300,
             annotationY: 300
         },
         {
-            title: 'Scene 3: Comparison of Contributing Factors by Country',
-            type: 'grouped-bar',
-            data: data.slice(0, 10),
-            annotation: 'This compares the factors contributing to happiness scores for the top 10 countries.',
-            annotationX: 400,
-            annotationY: 100
+            title: 'Scene 3: Social Support vs. Happiness Score (2023)',
+            type: 'scatter',
+            data: dataByYear[2023],
+            x: 'social_support',
+            y: 'happiness_score',
+            xLabel: 'Social Support',
+            yLabel: 'Happiness Score',
+            annotation: 'This scatter plot shows the relationship between social support and happiness score in 2023.',
+            annotationX: 300,
+            annotationY: 300
+        },
+        {
+            title: 'Scene 4: Healthy Life Expectancy vs. Happiness Score (2023)',
+            type: 'scatter',
+            data: dataByYear[2023],
+            x: 'healthy_life_expectancy',
+            y: 'happiness_score',
+            xLabel: 'Healthy Life Expectancy',
+            yLabel: 'Happiness Score',
+            annotation: 'This scatter plot shows the relationship between healthy life expectancy and happiness score in 2023.',
+            annotationX: 300,
+            annotationY: 300
+        },
+        {
+            title: 'Scene 5: Freedom to Make Life Choices vs. Happiness Score (2023)',
+            type: 'scatter',
+            data: dataByYear[2023],
+            x: 'freedom_to_make_life_choices',
+            y: 'happiness_score',
+            xLabel: 'Freedom to Make Life Choices',
+            yLabel: 'Happiness Score',
+            annotation: 'This scatter plot shows the relationship between freedom to make life choices and happiness score in 2023.',
+            annotationX: 300,
+            annotationY: 300
+        },
+        {
+            title: 'Scene 6: Happiness Scores Over Time (2015-2023)',
+            type: 'line',
+            data: Object.keys(dataByYear).map(year => ({
+                year: new Date(year, 0, 1),
+                happiness_score: d3.mean(dataByYear[year], d => d.happiness_score)
+            })),
+            annotation: 'This line chart shows the changes in average happiness scores over time from 2015 to 2023.',
+            annotationX: 300,
+            annotationY: 300
         }
     ];
 
@@ -283,3 +322,4 @@ function resizeChart() {
 }
 
 window.addEventListener('resize', resizeChart);
+
