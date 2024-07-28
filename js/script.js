@@ -50,100 +50,10 @@ function chart(parameters) {
     }
 }
 
-
-
-/* 
-
-const countryNameMapping = {
-    "United States": "United States of America",
-    "Russia": "Russian Federation",
-    "South Korea": "Korea, Republic of",
-    "North Korea": "Korea, Democratic People's Republic of",
-    "Czech Republic": "Czechia",
-    "Ivory Coast": "Côte d'Ivoire",
-    "Venezuela": "Venezuela (Bolivarian Republic of)",
-    "Tanzania": "Tanzania, United Republic of",
-    "Syria": "Syrian Arab Republic",
-    "Laos": "Lao People's Democratic Republic",
-    "Vietnam": "Viet Nam",
-    "Bolivia": "Bolivia (Plurinational State of)",
-    "Brunei": "Brunei Darussalam",
-    "Moldova": "Republic of Moldova",
-    "Swaziland": "Eswatini",
-    "Iran": "Iran (Islamic Republic of)",
-    "United Kingdom": "United Kingdom of Great Britain and Northern Ireland",
-    "Cape Verde": "Cabo Verde",
-    "Congo (Kinshasa)": "Democratic Republic of the Congo",
-    "Congo (Brazzaville)": "Republic of the Congo",
-    "Slovakia": "Slovak Republic",
-    "Libya": "Libya",
-    "Sao Tome and Principe": "São Tomé and Príncipe",
-    "St. Kitts and Nevis": "Saint Kitts and Nevis",
-    "St. Lucia": "Saint Lucia",
-    "St. Vincent and the Grenadines": "Saint Vincent and the Grenadines",
-    "Micronesia": "Micronesia (Federated States of)",
-    "Palestine": "Palestine, State of"
-};
- */
-
 // Define the tooltip
 const tooltip = d3.select('body').append('div')
     .attr('class', 'tooltip')
     .style('opacity', 0);
-
-
-/* // Render the world map
-function renderWorldMap(svg, parameters) {
-    d3.json('https://d3js.org/world-110m.v1.json').then(world => {
-        const countries = topojson.feature(world, world.objects.countries).features;
-
-        const projection = d3.geoMercator()
-            .scale(150)
-            .translate([svg.node().getBoundingClientRect().width / 2, svg.node().getBoundingClientRect().height / 2]);
-
-        const path = d3.geoPath().projection(projection);
-
-        const colorScale = d3.scaleSequential(d3.interpolateViridis)
-            .domain([0, d3.max(parameters.data, d => d.happiness_score)]);
-
-        svg.append('g')
-            .selectAll('path')
-            .data(countries)
-            .enter()
-            .append('path')
-            .attr('d', path)
-            .attr('fill', d => {
-                let countryName = d.properties.name || d.properties.ADMIN || d.properties.admin;
-                countryName = countryNameMapping[countryName] || countryName;
-                const country = parameters.data.find(c => c.Country === countryName);
-                return country ? colorScale(country.happiness_score) : '#ccc';
-            })
-            .attr('stroke', '#999')
-            .on('mouseover', function(event, d) {
-                let countryName = d.properties.name || d.properties.ADMIN || d.properties.admin;
-                countryName = countryNameMapping[countryName] || countryName;
-                const country = parameters.data.find(c => c.Country === countryName);
-                if (country) {
-                    d3.select(this).attr('fill', 'darkorange');
-                    tooltip.transition()
-                        .duration(200)
-                        .style('opacity', .9);
-                    tooltip.html(`Country: ${country.Country}<br/>Happiness Score: ${country.happiness_score}`)
-                        .style('left', (event.pageX) + 'px')
-                        .style('top', (event.pageY - 28) + 'px');
-                }
-            })
-            .on('mouseout', function(event, d) {
-                let countryName = d.properties.name || d.properties.ADMIN || d.properties.admin;
-                countryName = countryNameMapping[countryName] || countryName;
-                const country = parameters.data.find(c => c.Country === countryName);
-                d3.select(this).attr('fill', country ? colorScale(country.happiness_score) : '#ccc');
-                tooltip.transition()
-                    .duration(500)
-                    .style('opacity', 0);
-            });
-    });
-} */
 
 function renderScatterPlot(svg, parameters, plotWidth, plotHeight) {
     const margin = { top: 60, right: 40, bottom: 80, left: 90 };
