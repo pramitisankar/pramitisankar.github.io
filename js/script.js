@@ -8,12 +8,12 @@ function chart(param) {
         .attr('height',600);
     
         if (param.type === 'bar') { // creating bar chart for happiness scores
-        const s = d3.scaleBand()
+        const x = d3.scaleBand()
             .domain(param.data.map(d => d.country))
             .range([50, 750])
             .padding (0.1);
         
-        const l = d3.scaleLinear()
+        const y = d3.scaleLinear()
             .domain([0, d3.max(param.data, d => d.happiness_score)])
             .range([550, 50])
         
@@ -22,10 +22,17 @@ function chart(param) {
             .enter()
             .append('rect')
             .attr('class', 'bar')
-            .attr('s', d => s(d.country))
-            .attr('l', d => l(d.happiness_score))
-            .attr('width', s.bandwidth())
-            .attr('height', d => 550 - l(happiness_score))
+            .attr('s', d => x(d.country))
+            .attr('l', d => y(d.happiness_score))
+            .attr('width', x.bandwidth())
+            .attr('height', d => 550 - y(happiness_score))
             .style('fill', 'steelblue');
+
+        svg.append("g")
+            .attr("transform", "translate(0,550)")
+            .call(d3.axisBottom(x));
+        svg.append("g")
+            .attr("transform", "translate(50,0)")
+            .call(d3.axisLeft(y));
     }
 }
