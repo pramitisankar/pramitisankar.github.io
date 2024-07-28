@@ -11,7 +11,17 @@
     <script src="js/script.js" defer></script>
 </head>
 <body>
-    <div id="visualization-container">
+    <div class="intro-section" id="intro-section">
+        <h1>World Happiness Report Visualization</h1>
+        <p>
+            The World Happiness Report is a landmark survey of the state of global happiness. Explore the relationship
+            between various factors like GDP per capita, social support, healthy life expectancy, and more with the overall
+            happiness scores of different countries.
+        </p>
+        <button id="start-button">Start Exploring</button>
+    </div>
+    <div id="visualization-section" style="display: none;">
+        <div id="scene-title" class="scene-title"></div>
         <div id="text-boxes"></div>
         <div id="visualization"></div>
         <div class="button-container">

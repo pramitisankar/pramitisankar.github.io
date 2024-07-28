@@ -1,19 +1,36 @@
 let currentScene = 0;
 
-function nextScene() {
-    if (currentScene < scenes.length - 1) {
-        currentScene++;
-        chart(scenes[currentScene]);
-    }
-}
+/* function startVisualization() {
+    currentScene = 0; // Set the initial scene to 0
+    const introSection = document.getElementById('intro-section');
+    const visualizationSection = document.getElementById('visualization-section');
 
-function prevScene() {
-    if (currentScene > 0) {
-        currentScene--;
-        chart(scenes[currentScene]);
+    if (introSection) {
+        introSection.style.display = 'none'; // Hide the intro section
     }
+
+    if (visualizationSection) {
+        visualizationSection.style.display = 'block'; // Show the visualization section
+    }
+
+    chart(scenes[currentScene]); // Render the first scene
 }
+document.getElementById("start-button").addEventListener("click", startVisualization); */
+
 function chart(parameters) {
+    const introSection = document.getElementById('intro-section');
+    const visualizationSection = document.getElementById('visualization-section');
+
+    if (currentScene !== 0) {
+        if (introSection) {
+            introSection.style.display = 'none';
+        }
+        
+        if (visualizationSection) {
+            visualizationSection.style.display = 'block';
+        }
+    }
+
     d3.select('#visualization').html('');
     const plotWidth = d3.select('#visualization').node().getBoundingClientRect().width;
     const plotHeight = 400; // Fixed height of 400px
@@ -28,6 +45,8 @@ function chart(parameters) {
         d3.select('#text-boxes').append('div').attr('class', 'text-box').text(text);
     });
     
+    d3.select('#scene-title').html(parameters.sceneTitle || '');
+
     if (parameters.type === 'scatter') {
         renderScatterPlot(svg, parameters, plotWidth, plotHeight);
     } else if (parameters.type === 'line') {
@@ -53,9 +72,17 @@ function chart(parameters) {
         svg.append('g')
             .call(makeAnnotations);
     }
+    if (currentScene === 0) {
+        if (introSection) {
+            introSection.style.display = 'block';
+        }
+        
+        if (visualizationSection) {
+            visualizationSection.style.display = 'none';
+        }
+    }
 }
 
-// Define the tooltip
 const tooltip = d3.select('body').append('div')
     .attr('class', 'tooltip')
     .style('opacity', 0);
@@ -130,6 +157,7 @@ function renderScatterPlot(svg, parameters, plotWidth, plotHeight) {
         .text(parameters.title);
 }
 
+
 function renderLineChart(svg, parameters, plotWidth, plotHeight) {
     const margin = { top: 40, right: 40, bottom: 70, left: 70 };
     const width = plotWidth - margin.left - margin.right;
@@ -190,7 +218,31 @@ function renderLineChart(svg, parameters, plotWidth, plotHeight) {
 function initializeScenes(dataByYear) {
     scenes = [
         {
+            title: ' fake scene)',
             type: 'scatter',
+            data: dataByYear[2023],
+            x: 'social_support',
+            y: 'happiness_score',
+            xLabel: 'temp placement',
+            yLabel: 'temp placement',
+            annotations: [
+                {
+                    title: 'United States',
+                    label: 'GDP per Capita: 1.39451, Happiness Score: 7.119',
+                    x: 1050,
+                    y: 75,
+                    dy: 100,
+                    dx: 100
+                }
+            ],
+        textBoxes: [
+            "this is temp placement"
+        ]
+
+        },
+        {
+            type: 'scatter',
+            sceneTitle: 'Scene 1: GDP per Capita vs. Happiness Score (2023)', // Add scene title
             data: dataByYear[2023],
             x: 'gdp_per_capita',
             y: 'happiness_score',
@@ -229,8 +281,8 @@ function initializeScenes(dataByYear) {
         ]
         },
         {
-            title: 'Scene 2: Social Support vs. Happiness Score (2023)',
             type: 'scatter',
+            sceneTitle: 'Scene 2: Social Support vs. Happiness Score (2023)', // Add scene title
             data: dataByYear[2023],
             x: 'social_support',
             y: 'happiness_score',
@@ -270,8 +322,8 @@ function initializeScenes(dataByYear) {
 
         },
         {
-            title: 'Scene 3: Healthy Life Expectancy vs. Happiness Score (2023)',
             type: 'scatter',
+            sceneTitle: 'Scene 3: Healthy Life Expectancy vs. Happiness Score (2023)', // Add scene title
             data: dataByYear[2023],
             x: 'healthy_life_expectancy',
             y: 'happiness_score',
@@ -288,9 +340,9 @@ function initializeScenes(dataByYear) {
         ]
         },
         {
-            title: 'Scene 4: Freedom to Make Life Choices vs. Happiness Score (2023)',
             type: 'scatter',
             data: dataByYear[2023],
+            sceneTitle:'Scene 4: Freedom to Make Life Choices vs. Happiness Score (2023)',
             x: 'freedom_to_make_life_choices',
             y: 'happiness_score',
             xLabel: 'Freedom to Make Life Choices',
@@ -306,7 +358,7 @@ function initializeScenes(dataByYear) {
         ]
         },
         {
-            title: 'Scene 5: Happiness Scores Over Time (2015-2023)',
+            sceneTitle: 'Scene 5: Happiness Scores Over Time (2015-2023)',
             type: 'line',
             data: Object.keys(dataByYear).map(year => ({
                 year: new Date(year, 0, 1),
@@ -359,7 +411,8 @@ Promise.all([
 
 
 document.getElementById('next').addEventListener('click', nextScene);
-document.getElementById('previous').addEventListener('click', prevScene);
+document.getElementById('previous').addEventListener('click', previousScene);
+document.getElementById('start-button').addEventListener('click', nextScene);
 
 function resizeChart() {
     const plotWidth = document.getElementById('visualization').clientWidth;
@@ -371,6 +424,21 @@ function resizeChart() {
     if (scenes && scenes[currentScene]) {
         chart(scenes[currentScene]);
     }
+}
+function nextScene() {
+    currentScene++;
+    if (currentScene >= scenes.length) {
+        currentScene = 0;
+    }
+    chart(scenes[currentScene]);
+}
+
+function previousScene() {
+    currentScene--;
+    if (currentScene < 0) {
+        currentScene = scenes.length - 1;
+    }
+    chart(scenes[currentScene]);
 }
 
 window.addEventListener('resize', resizeChart);
