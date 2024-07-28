@@ -34,5 +34,18 @@ function chart(param) {
         svg.append("g")
             .attr("transform", "translate(50,0)")
             .call(d3.axisLeft(y));
+
+        svg.append("text")
+            .attr("transform", "translate(400,590)")
+            .style("text-anchor", "middle")
+            .text("Country");
+
+        svg.append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 20)
+            .attr("x", -300)
+            .attr("dy", "1em")
+            .style("text-anchor", "middle")
+            .text("Happiness Score");
     }
 }
