@@ -27,21 +27,25 @@ function chart(parameters) {
     parameters.textBoxes.forEach(text => {
         d3.select('#text-boxes').append('div').attr('class', 'text-box').text(text);
     });
-
-    if (parameters.type === 'map') {
-        renderWorldMap(svg, parameters, plotWidth, plotHeight);
-    } else if (parameters.type === 'scatter') {
+    
+    if (parameters.type === 'scatter') {
         renderScatterPlot(svg, parameters, plotWidth, plotHeight);
     } else if (parameters.type === 'line') {
         renderLineChart(svg, parameters, plotWidth, plotHeight);
     }
 
-    if (parameters.annotation) {
-        const annotations = [{
-            note: { label: parameters.annotation, title: parameters.title },
-            x: parameters.annotationX, y: parameters.annotationY,
-            dy: 100, dx: 100
-        }];
+    if (parameters.annotations) {
+        const annotations = parameters.annotations.map(ann => ({
+            note: { 
+                label: ann.label, 
+                title: ann.title,
+                align: "middle", // Add align property
+                orientation: "leftRight" // Add orientation property
+            },
+            x: ann.x, // Set X coordinate for the point
+            y: ann.y, // Set Y coordinate for the point
+            dy: ann.dy, dx: ann.dx // Adjust these values to position the annotation and line
+        }));
 
         const makeAnnotations = d3.annotation()
             .annotations(annotations);
@@ -186,17 +190,38 @@ function renderLineChart(svg, parameters, plotWidth, plotHeight) {
 function initializeScenes(dataByYear) {
     scenes = [
         {
-            title: 'Scene 1: GDP per Capita vs. Happiness Score (2023)',
             type: 'scatter',
             data: dataByYear[2023],
             x: 'gdp_per_capita',
             y: 'happiness_score',
             xLabel: 'GDP per Capita',
             yLabel: 'Happiness Score',
-            annotation: 'This scatter plot shows the relationship between GDP per capita and happiness score in 2023.',
-            annotationX: 300,
-            annotationY: 300,
-            title: 'Scene 1: GDP per Capita vs. Happiness Score (2023)',
+            annotations: [
+                {
+                    title: 'United States',
+                    label: 'GDP per Capita: 1.39451, Happiness Score: 7.119',
+                    x: 1050,
+                    y: 75,
+                    dy: 100,
+                    dx: 100
+                },
+                {
+                    title: 'Togo',
+                    label: 'GDP per Capita: 0.20868, Happiness Score: 2.839',
+                    x: 230,
+                    y: 220,
+                    dy: 50,
+                    dx: 100
+                },
+                {
+                    title: 'Bhutan',
+                    label: 'GDP per Capita: 0.77042, Happiness Score: 5.253',
+                    x: 620,
+                    y: 140,
+                    dy: -50,
+                    dx: -50
+                }
+            ],
         textBoxes: [
             "This scatter plot shows the relationship between GDP per capita and happiness score in 2023.",
             "Each point represents a country, with its position on the horizontal axis showing its GDP per capita and its position on the vertical axis showing its happiness score.",
@@ -211,10 +236,32 @@ function initializeScenes(dataByYear) {
             y: 'happiness_score',
             xLabel: 'Social Support',
             yLabel: 'Happiness Score',
-            annotation: 'This scatter plot shows the relationship between social support and happiness score in 2023.',
-            annotationX: 300,
-            annotationY: 300,
-            title: 'Scene 2: Social Support vs. Happiness Score (2023)',
+            annotations: [
+                {
+                    title: 'United States',
+                    label: 'GDP per Capita: 1.39451, Happiness Score: 7.119',
+                    x: 1050,
+                    y: 75,
+                    dy: 100,
+                    dx: 100
+                },
+                {
+                    title: 'Togo',
+                    label: 'GDP per Capita: 0.20868, Happiness Score: 2.839',
+                    x: 230,
+                    y: 220,
+                    dy: 50,
+                    dx: 100
+                },
+                {
+                    title: 'Bhutan',
+                    label: 'GDP per Capita: 0.77042, Happiness Score: 5.253',
+                    x: 620,
+                    y: 140,
+                    dy: -50,
+                    dx: -50
+                }
+            ],
         textBoxes: [
             "This scatter plot shows the relationship between social support and happiness score in 2023.",
             "Each point represents a country, with its position on the horizontal axis showing its social support and its position on the vertical axis showing its happiness score.",
