@@ -1,22 +1,5 @@
 let currentScene = 0;
 
-/* function startVisualization() {
-    currentScene = 0; // Set the initial scene to 0
-    const introSection = document.getElementById('intro-section');
-    const visualizationSection = document.getElementById('visualization-section');
-
-    if (introSection) {
-        introSection.style.display = 'none'; // Hide the intro section
-    }
-
-    if (visualizationSection) {
-        visualizationSection.style.display = 'block'; // Show the visualization section
-    }
-
-    chart(scenes[currentScene]); // Render the first scene
-}
-document.getElementById("start-button").addEventListener("click", startVisualization); */
-
 function chart(parameters) {
     const introSection = document.getElementById('intro-section');
     const visualizationSection = document.getElementById('visualization-section');
