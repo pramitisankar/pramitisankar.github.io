@@ -53,7 +53,22 @@ function renderBarChart(svg, parameters) {
         .attr('y', d => y(d.happiness_score))
         .attr('width', x.bandwidth())
         .attr('height', d => 700 - y(d.happiness_score))
-        .style('fill', 'steelblue');
+        .style('fill', 'steelblue')
+        .on('mouseover', function(event, d) {
+            d3.select(this).style('fill', 'darkorange');
+            tooltip.transition()
+                .duration(200)
+                .style('opacity', .9);
+            tooltip.html(`Country: ${d.country}<br/>Score: ${d.happiness_score}`)
+                .style('left', (event.pageX) + 'px')
+                .style('top', (event.pageY - 28) + 'px');
+        })
+        .on('mouseout', function(d) {
+            d3.select(this).style('fill', 'steelblue');
+            tooltip.transition()
+                .duration(500)
+                .style('opacity', 0);
+        });
 
     svg.append('g')
         .attr('transform', 'translate(0, 700)')
@@ -79,7 +94,22 @@ function renderScatterPlot(svg, parameters) {
         .attr('cx', d => x(d.gdp_per_capita))
         .attr('cy', d => y(d.happiness_score))
         .attr('r', 5)
-        .style('fill', 'steelblue');
+        .style('fill', 'steelblue')
+        .on('mouseover', function(event, d) {
+            d3.select(this).style('fill', 'darkorange');
+            tooltip.transition()
+                .duration(200)
+                .style('opacity', .9);
+            tooltip.html(`Country: ${d.country}<br/>GDP: ${d.gdp_per_capita}<br/>Score: ${d.happiness_score}`)
+                .style('left', (event.pageX) + 'px')
+                .style('top', (event.pageY - 28) + 'px');
+        })
+        .on('mouseout', function(d) {
+            d3.select(this).style('fill', 'steelblue');
+            tooltip.transition()
+                .duration(500)
+                .style('opacity', 0);
+        });
 
     svg.append('g')
         .attr('transform', 'translate(0, 700)')
@@ -128,7 +158,22 @@ function renderGroupedBarChart(svg, parameters) {
         .attr('y', d => y(d.value))
         .attr('width', x1.bandwidth())
         .attr('height', d => 700 - y(d.value))
-        .attr('fill', d => d3.schemeCategory10[factors.indexOf(d.key)]);
+        .attr('fill', d => d3.schemeCategory10[factors.indexOf(d.key)])
+        .on('mouseover', function(event, d) {
+            d3.select(this).style('fill', 'darkorange');
+            tooltip.transition()
+                .duration(200)
+                .style('opacity', .9);
+            tooltip.html(`${factorNames[d.key]}: ${d.value}`)
+                .style('left', (event.pageX) + 'px')
+                .style('top', (event.pageY - 28) + 'px');
+        })
+        .on('mouseout', function(d) {
+            d3.select(this).style('fill', d3.schemeCategory10[factors.indexOf(d.key)]);
+            tooltip.transition()
+                .duration(500)
+                .style('opacity', 0);
+        });
 
     svg.append('g')
         .attr('transform', 'translate(0, 700)')
@@ -170,10 +215,23 @@ function prevScene() {
     }
 }
 
-// load data and initialize scenes
-d3.csv('data/WHR_2023.csv').then(data => {
-    console.log('Data Loaded:', data);
+// Tooltips
+const tooltip = d3.select('body').append('div')
+    .attr('class', 'tooltip')
+    .style('position', 'absolute')
+    .style('text-align', 'center')
+    .style('width', '120px')
+    .style('height', '28px')
+    .style('padding', '2px')
+    .style('font', '12px sans-serif')
+    .style('background', 'lightsteelblue')
+    .style('border', '0px')
+    .style('border-radius', '8px')
+    .style('pointer-events', 'none')
+    .style('opacity', 0);
 
+// Load data and initialize scenes
+d3.csv('data/WHR_2023.csv').then(data => {
     data.forEach(d => {
         d.happiness_score = +d.happiness_score;
         d.gdp_per_capita = +d.gdp_per_capita;
@@ -214,16 +272,8 @@ d3.csv('data/WHR_2023.csv').then(data => {
     chart(scenes[currentScene]);
 });
 
-// Attach event listeners after defining nextScene and prevScene
-document.getElementById('next').addEventListener('click', () => {
-    console.log('Next button clicked');
-    nextScene();
-});
-
-document.getElementById('previous').addEventListener('click', () => {
-    console.log('Previous button clicked');
-    prevScene();
-});
+document.getElementById('next').addEventListener('click', nextScene);
+document.getElementById('previous').addEventListener('click', prevScene);
 
 function resizeChart() {
     const width = document.getElementById('visualization').clientWidth;
