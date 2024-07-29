@@ -356,7 +356,7 @@ function initializeScenes(dataByYear) {
         },
         {
             type: 'bubble',
-            sceneTitle: 'çGDP per Capita vs. Happiness Score (2023)', // Add scene title
+            sceneTitle: 'GDP per Capita vs. Happiness Score (2023)', // Add scene title
             data: dataByYear[2023],
             x: 'gdp_per_capita',
             y: 'happiness_score',
