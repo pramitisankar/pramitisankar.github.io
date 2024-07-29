@@ -272,25 +272,36 @@ function renderLineChart(svg, parameters, plotWidth, plotHeight) {
         .domain(d3.extent(parameters.data, d => d.year))
         .range([0, width]);
 
+    // Define the zoom range for the Y axis
+    const yZoomRange = [5, 6];
+
+    // Adjust the Y scale to the zoomed range
     const y = d3.scaleLinear()
-        .domain([0, d3.max(parameters.data, d => d.happiness_score)])
+        .domain(yZoomRange)
         .range([height, 0]);
 
+    // Filter the data to the zoom range
+    const filteredData = parameters.data.filter(d => d.happiness_score >= yZoomRange[0] && d.happiness_score <= yZoomRange[1]);
+
+    // Create the line generator
     const line = d3.line()
         .x(d => x(d.year))
         .y(d => y(d.happiness_score));
 
+    // Append the path for the line chart
     g.append('path')
-        .datum(parameters.data)
+        .datum(filteredData)
         .attr('fill', 'none')
         .attr('stroke', 'darkorange')
         .attr('stroke-width', 1.5)
         .attr('d', line);
 
+    // Add the X axis
     g.append('g')
         .attr('transform', `translate(0, ${height})`)
         .call(d3.axisBottom(x));
 
+    // Add the Y axis with the zoomed range
     g.append('g')
         .call(d3.axisLeft(y));
 
@@ -316,6 +327,7 @@ function renderLineChart(svg, parameters, plotWidth, plotHeight) {
         .style('font-weight', 'bold')
         .text(parameters.title);
 }
+
 
 function initializeScenes(dataByYear) {
     scenes = [
@@ -344,7 +356,7 @@ function initializeScenes(dataByYear) {
         },
         {
             type: 'bubble',
-            sceneTitle: 'Scene 1: GDP per Capita vs. Happiness Score (2023)', // Add scene title
+            sceneTitle: 'çGDP per Capita vs. Happiness Score (2023)', // Add scene title
             data: dataByYear[2023],
             x: 'gdp_per_capita',
             y: 'happiness_score',
@@ -386,7 +398,7 @@ function initializeScenes(dataByYear) {
         },
         {
             type: 'bubble',
-            sceneTitle: 'Scene 2: Social Support vs. Happiness Score (2023)', // Add scene title
+            sceneTitle: 'Social Support vs. Happiness Score (2023)', // Add scene title
             data: dataByYear[2023],
             x: 'social_support',
             y: 'happiness_score',
@@ -395,74 +407,68 @@ function initializeScenes(dataByYear) {
             annotations: [
                 {
                     title: 'United States',
-                    label: 'GDP per Capita: 1.39451, Happiness Score: 7.119',
-                    x: 1050,
+                    label: 'Social Support: 1.24711, Happiness Score: 7.119',
+                    x: 990,
                     y: 75,
-                    dy: 100,
-                    dx: 100
+                    dy: 120,
+                    dx: 60
                 },
                 {
                     title: 'Togo',
-                    label: 'GDP per Capita: 0.20868, Happiness Score: 2.839',
-                    x: 230,
+                    label: 'Social Support: 0.13995, Happiness Score: 2.839',
+                    x: 190,
                     y: 220,
-                    dy: 50,
+                    dy: 35,
                     dx: 100
                 },
                 {
                     title: 'Bhutan',
-                    label: 'GDP per Capita: 0.77042, Happiness Score: 5.253',
-                    x: 620,
+                    label: 'Social Support: 1.10395, Happiness Score: 5.253',
+                    x: 880,
                     y: 140,
-                    dy: -50,
+                    dy: -74,
                     dx: -50
                 }
             ],
         textBoxes: [
-            "This scatter plot shows the relationship between social support and happiness score in 2023.",
-            "Each point represents a country, with its position on the horizontal axis showing its social support and its position on the vertical axis showing its happiness score.",
-            "The plot highlights the importance of social support in determining the overall happiness of a country."
+            "🫧 This bubble plot shows the relationship between social support and happiness score in 2023.",
+            "ⓘ Each point represents a country, with its position on the horizontal axis showing its social support and its position on the vertical axis showing its happiness score.",
+            "🔎 Try hovering over the regions in the legend. You can see if some regions are happier."
         ]
 
         },
         {
             type: 'bubble',
-            sceneTitle: 'Scene 3: Healthy Life Expectancy vs. Happiness Score (2023)', // Add scene title
+            sceneTitle: 'Healthy Life Expectancy in 2023', // Add scene title
             data: dataByYear[2023],
             x: 'healthy_life_expectancy',
             y: 'happiness_score',
             xLabel: 'Healthy Life Expectancy',
             yLabel: 'Happiness Score',
-            annotation: 'This scatter plot shows the relationship between healthy life expectancy and happiness score in 2023.',
-            annotationX: 300,
-            annotationY: 300,
-            title: 'Scene 3: Healthy Life Expectancy vs. Happiness Score (2023)',
+            title: '2023',
         textBoxes: [
-            "ⓘ This scatter plot shows the relationship between healthy life expectancy and happiness score in 2023.",
+            "ⓘ This bubble plot shows the relationship between healthy life expectancy and happiness score in 2023.",
             "ⓘ Each point represents a country, with its position on the horizontal axis showing its healthy life expectancy and its position on the vertical axis showing its happiness score.",
-            "ⓘ The plot underscores the role of health and longevity in contributing to the overall happiness of a country."
+            "ⓘ Try clicking the NEXT button to see the same plot but in the year 2015."
         ]
         },
         {
-            type: 'scatter',
-            data: dataByYear[2023],
-            sceneTitle:'Scene 4: Freedom to Make Life Choices vs. Happiness Score (2023)',
-            x: 'freedom_to_make_life_choices',
+            type: 'bubble',
+            sceneTitle: 'What about in 2015?', // Add scene title
+            data: dataByYear[2015],
+            x: 'healthy_life_expectancy',
             y: 'happiness_score',
-            xLabel: 'Freedom to Make Life Choices',
+            xLabel: 'Healthy Life Expectancy',
             yLabel: 'Happiness Score',
-            annotation: 'This scatter plot shows the relationship between freedom to make life choices and happiness score in 2023.',
-            annotationX: 300,
-            annotationY: 300,
-            title: 'Scene 4: Freedom to Make Life Choices vs. Happiness Score (2023)',
+            title: '2015',
         textBoxes: [
-            "This scatter plot shows the relationship between freedom to make life choices and happiness score in 2023.",
-            "Each point represents a country, with its position on the horizontal axis showing its freedom to make life choices and its position on the vertical axis showing its happiness score.",
-            "The plot emphasizes the significance of personal freedom in determining the overall happiness of a country."
+            "ⓘ This bubble plot shows the relationship between healthy life expectancy and happiness score in 1015.",
+            "ⓘ Each point represents a country, with its position on the horizontal axis showing its healthy life expectancy and its position on the vertical axis showing its happiness score.",
+            "🔎 Notice differences? The healthy life expectancy decreased in 2015, accompanied by a slight decrease in happiness scores."
         ]
         },
         {
-            sceneTitle: 'Scene 5: Happiness Scores Over Time (2015-2023)',
+            sceneTitle: 'Happiness Scores Over Time (2015-2023)',
             type: 'line',
             data: Object.keys(dataByYear).map(year => ({
                 year: new Date(year, 0, 1),
@@ -471,11 +477,10 @@ function initializeScenes(dataByYear) {
             annotation: 'This line chart shows the changes in average happiness scores over time from 2015 to 2023.',
             annotationX: 300,
             annotationY: 300,
-            title: 'Scene 5: Happiness Scores Over Time (2015-2023)',
         textBoxes: [
-            "This line chart shows the changes in average happiness scores over time from 2015 to 2023.",
-            "The horizontal axis represents the years, while the vertical axis represents the average happiness score.",
-            "The line chart helps us visualize trends and changes in happiness scores over the specified period."
+            "🔎 This line chart helps us visualize the slight downward trend in happiness scores from 2015 to 2023.",
+            "🕵 So what influences the world's happiness scores? We found out that GDP per Capita, Social Support, and Healthy Life Expectancy are the main factors that influence our happiness.",
+          "🤗 Hope you learned that the happiness levels in our world are significantly influenced by a variety of factors and are not independent."
         ]
         }
     ];
