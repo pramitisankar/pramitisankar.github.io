@@ -15,7 +15,7 @@ function chart(parameters) {
     }
 
     d3.select('#visualization').html('');
-    const plotWidth = d3.select('#visualization').node().getBoundingClientRect().width;
+    const plotWidth = 1400; //fixed 
     const plotHeight = 400; // Fixed height of 400px
 
     const svg = d3.select('#visualization')
@@ -29,8 +29,9 @@ function chart(parameters) {
     });
     
     d3.select('#scene-title').html(parameters.sceneTitle || '');
-
-    if (parameters.type === 'scatter') {
+    if (parameters.type == 'bubble') {
+        renderBubblePlot(svg, parameters, 1300, plotHeight);
+    } else if (parameters.type === 'scatter') {
         renderScatterPlot(svg, parameters, plotWidth, plotHeight);
     } else if (parameters.type === 'line') {
         renderLineChart(svg, parameters, plotWidth, plotHeight);
@@ -69,6 +70,110 @@ function chart(parameters) {
 const tooltip = d3.select('body').append('div')
     .attr('class', 'tooltip')
     .style('opacity', 0);
+
+    function renderBubblePlot(svg, parameters, plotWidth, plotHeight) {
+        console.log("Rendering bubbles with data: ", parameters.data);
+        
+        const margin = { top: 60, right: 200, bottom: 80, left: 90 };
+        const width = plotWidth - margin.left - margin.right;
+        const height = plotHeight - margin.top - margin.bottom;
+    
+        const g = svg.append('g')
+            .attr('transform', `translate(${margin.left},${margin.top})`);
+    
+        const x = d3.scaleLinear()
+            .domain(d3.extent(parameters.data, d => d[parameters.x]))
+            .range([0, width]);
+    
+        const y = d3.scaleLinear()
+            .domain([0, d3.max(parameters.data, d => d[parameters.y])])
+            .range([height, 0]);
+    
+        const color = d3.scaleOrdinal(d3.schemeCategory10);
+    
+        // Create a scale for bubble sizes based on perceptions_of_corruption
+        const size = d3.scaleSqrt()
+            .domain(d3.extent(parameters.data, d => d.perceptions_of_corruption))
+            .range([2, 17]); // Adjust range as needed for bubble sizes
+    
+        g.selectAll('circle')
+            .data(parameters.data)
+            .enter()
+            .append('circle')
+            .attr('cx', d => x(d[parameters.x]))
+            .attr('cy', d => y(d[parameters.y]))
+            .attr('r', d => size(d.perceptions_of_corruption))  
+            .style('fill', d => color(d.region))
+            .style('opacity', 0.7)  // Adjust opacity for better visibility
+            .on('mouseover', function(event, d) {
+                d3.select(this).style('fill', '#ccc');
+                tooltip.transition()
+                    .duration(200)
+                    .style('opacity', .9);
+                tooltip.html(`Country: ${d.country}<br/>${parameters.xLabel}: ${d[parameters.x]}<br/>${parameters.yLabel}: ${d[parameters.y]}<br/>Perceptions of Corruption: ${d.perceptions_of_corruption}`)
+                    .style('left', (event.pageX) + 'px')
+                    .style('top', (event.pageY - 28) + 'px');
+            })
+            .on('mouseout', function(d) {
+                d3.select(this).style('fill', d => color(d.region));
+                tooltip.transition()
+                    .duration(500)
+                    .style('opacity', 0);
+            });
+    
+        g.append('g')
+            .attr('transform', `translate(0, ${height})`)
+            .call(d3.axisBottom(x));
+    
+        g.append('g')
+            .call(d3.axisLeft(y));
+    
+        // Add axis labels
+        svg.append('text')
+            .attr('transform', `translate(${margin.left + width / 2}, ${plotHeight - 10})`)
+            .style('text-anchor', 'middle')
+            .text(parameters.xLabel);
+    
+        svg.append('text')
+            .attr('transform', 'rotate(-90)')
+            .attr('y', margin.left - 50)
+            .attr('x', -(margin.top + height / 2))
+            .style('text-anchor', 'middle')
+            .text(parameters.yLabel);
+    
+        // Add plot title
+        svg.append('text')
+            .attr('x', margin.left + width / 2)
+            .attr('y', margin.top - 20)
+            .style('text-anchor', 'middle')
+            .style('font-size', '20px')
+            .style('font-weight', 'bold')
+            .text(parameters.title);
+    
+        // Add legend
+        const legend = svg.append('g')
+            .attr('transform', `translate(${width + margin.left + 40}, ${margin.top})`);
+    
+        const regions = Array.from(new Set(parameters.data.map(d => d.region)));
+        regions.forEach((region, i) => {
+            const legendRow = legend.append('g')
+                .attr('transform', `translate(0, ${i * 20})`);
+    
+            legendRow.append('rect')
+                .attr('width', 10)
+                .attr('height', 10)
+                .attr('fill', color(region));
+    
+            legendRow.append('text')
+                .attr('x', 20)
+                .attr('y', 10)
+                .attr('text-anchor', 'start')
+                .style('font-size', '12px')
+                .text(region);
+        });
+    }
+    
+    
 
 function renderScatterPlot(svg, parameters, plotWidth, plotHeight) {
     const margin = { top: 60, right: 40, bottom: 80, left: 90 };
@@ -201,8 +306,8 @@ function renderLineChart(svg, parameters, plotWidth, plotHeight) {
 function initializeScenes(dataByYear) {
     scenes = [
         {
-            title: ' fake scene)',
-            type: 'scatter',
+            title: 'fake scene',
+            type: 'bubble',
             data: dataByYear[2023],
             x: 'social_support',
             y: 'happiness_score',
@@ -224,43 +329,45 @@ function initializeScenes(dataByYear) {
 
         },
         {
-            type: 'scatter',
+            type: 'bubble',
             sceneTitle: 'Scene 1: GDP per Capita vs. Happiness Score (2023)', // Add scene title
             data: dataByYear[2023],
             x: 'gdp_per_capita',
             y: 'happiness_score',
+            r: 'population',
+            region: 'region',
             xLabel: 'GDP per Capita',
             yLabel: 'Happiness Score',
             annotations: [
                 {
                     title: 'United States',
                     label: 'GDP per Capita: 1.39451, Happiness Score: 7.119',
-                    x: 1050,
-                    y: 75,
+                    x: 920,
+                    y: 80,
                     dy: 100,
                     dx: 100
                 },
                 {
                     title: 'Togo',
                     label: 'GDP per Capita: 0.20868, Happiness Score: 2.839',
-                    x: 230,
+                    x: 220,
                     y: 220,
-                    dy: 50,
-                    dx: 100
+                    dy: 30,
+                    dx: 140
                 },
                 {
                     title: 'Bhutan',
                     label: 'GDP per Capita: 0.77042, Happiness Score: 5.253',
-                    x: 620,
+                    x: 550,
                     y: 140,
                     dy: -50,
                     dx: -50
                 }
             ],
         textBoxes: [
-            "This scatter plot shows the relationship between GDP per capita and happiness score in 2023.",
-            "Each point represents a country, with its position on the horizontal axis showing its GDP per capita and its position on the vertical axis showing its happiness score.",
-            "The scatter plot helps us understand how economic wealth correlates with the overall happiness of a country."
+            "🫧 This bubble plot shows the relationship between GDP per capita (economic wealth) and happiness score in 2023.",
+            "ⓘ Each point represents a country, with its position on the horizontal axis showing its GDP per capita and its position on the vertical axis showing its happiness score. The size of each bubble is dependent on how citizens perceive the level of corruption",
+            "🔎 Try hovering over each country to see its GDP per capita, 2023 happiness score, and perception of corruption. "
         ]
         },
         {
@@ -317,9 +424,9 @@ function initializeScenes(dataByYear) {
             annotationY: 300,
             title: 'Scene 3: Healthy Life Expectancy vs. Happiness Score (2023)',
         textBoxes: [
-            "This scatter plot shows the relationship between healthy life expectancy and happiness score in 2023.",
-            "Each point represents a country, with its position on the horizontal axis showing its healthy life expectancy and its position on the vertical axis showing its happiness score.",
-            "The plot underscores the role of health and longevity in contributing to the overall happiness of a country."
+            "ⓘ This scatter plot shows the relationship between healthy life expectancy and happiness score in 2023.",
+            "ⓘ Each point represents a country, with its position on the horizontal axis showing its healthy life expectancy and its position on the vertical axis showing its happiness score.",
+            "ⓘ The plot underscores the role of health and longevity in contributing to the overall happiness of a country."
         ]
         },
         {
