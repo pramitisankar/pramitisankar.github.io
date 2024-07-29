@@ -170,3 +170,12 @@ button:hover {
     stroke-width: 2;
     stroke: white;
 }
+.filtered {
+    opacity: 1 !important;
+    stroke: black;
+    stroke-width: 2px;
+}
+
+.dimmed {
+    opacity: 0.2;
+}

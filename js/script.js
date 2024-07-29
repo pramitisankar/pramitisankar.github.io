@@ -1,3 +1,4 @@
+
 let currentScene = 0;
 
 function chart(parameters) {
@@ -72,8 +73,6 @@ const tooltip = d3.select('body').append('div')
     .style('opacity', 0);
 
     function renderBubblePlot(svg, parameters, plotWidth, plotHeight) {
-        console.log("Rendering bubbles with data: ", parameters.data);
-        
         const margin = { top: 60, right: 200, bottom: 80, left: 90 };
         const width = plotWidth - margin.left - margin.right;
         const height = plotHeight - margin.top - margin.bottom;
@@ -91,20 +90,19 @@ const tooltip = d3.select('body').append('div')
     
         const color = d3.scaleOrdinal(d3.schemeCategory10);
     
-        // Create a scale for bubble sizes based on perceptions_of_corruption
         const size = d3.scaleSqrt()
             .domain(d3.extent(parameters.data, d => d.perceptions_of_corruption))
-            .range([2, 17]); // Adjust range as needed for bubble sizes
+            .range([2, 17]);
     
-        g.selectAll('circle')
+        const circles = g.selectAll('circle')
             .data(parameters.data)
             .enter()
             .append('circle')
             .attr('cx', d => x(d[parameters.x]))
             .attr('cy', d => y(d[parameters.y]))
-            .attr('r', d => size(d.perceptions_of_corruption))  
+            .attr('r', d => size(d.perceptions_of_corruption))
             .style('fill', d => color(d.region))
-            .style('opacity', 0.7)  // Adjust opacity for better visibility
+            .style('opacity', 0.7)
             .on('mouseover', function(event, d) {
                 d3.select(this).style('fill', '#ccc');
                 tooltip.transition()
@@ -128,7 +126,6 @@ const tooltip = d3.select('body').append('div')
         g.append('g')
             .call(d3.axisLeft(y));
     
-        // Add axis labels
         svg.append('text')
             .attr('transform', `translate(${margin.left + width / 2}, ${plotHeight - 10})`)
             .style('text-anchor', 'middle')
@@ -141,7 +138,6 @@ const tooltip = d3.select('body').append('div')
             .style('text-anchor', 'middle')
             .text(parameters.yLabel);
     
-        // Add plot title
         svg.append('text')
             .attr('x', margin.left + width / 2)
             .attr('y', margin.top - 20)
@@ -150,7 +146,6 @@ const tooltip = d3.select('body').append('div')
             .style('font-weight', 'bold')
             .text(parameters.title);
     
-        // Add legend
         const legend = svg.append('g')
             .attr('transform', `translate(${width + margin.left + 40}, ${margin.top})`);
     
@@ -162,16 +157,35 @@ const tooltip = d3.select('body').append('div')
             legendRow.append('rect')
                 .attr('width', 10)
                 .attr('height', 10)
-                .attr('fill', color(region));
+                .attr('fill', color(region))
+                .on('mouseover', function() {
+                    circles.classed('dimmed', d => d.region !== region)
+                           .classed('filtered', d => d.region === region);
+                })
+                .on('mouseout', function() {
+                    circles.classed('dimmed', false)
+                           .classed('filtered', false);
+                });
     
             legendRow.append('text')
                 .attr('x', 20)
                 .attr('y', 10)
                 .attr('text-anchor', 'start')
                 .style('font-size', '12px')
-                .text(region);
+                .text(region)
+                .on('mouseover', function() {
+                    circles.classed('dimmed', d => d.region !== region)
+                           .classed('filtered', d => d.region === region);
+                })
+                .on('mouseout', function() {
+                    circles.classed('dimmed', false)
+                           .classed('filtered', false);
+                });
         });
     }
+    
+    
+    
     
     
 
@@ -371,7 +385,7 @@ function initializeScenes(dataByYear) {
         ]
         },
         {
-            type: 'scatter',
+            type: 'bubble',
             sceneTitle: 'Scene 2: Social Support vs. Happiness Score (2023)', // Add scene title
             data: dataByYear[2023],
             x: 'social_support',
@@ -412,7 +426,7 @@ function initializeScenes(dataByYear) {
 
         },
         {
-            type: 'scatter',
+            type: 'bubble',
             sceneTitle: 'Scene 3: Healthy Life Expectancy vs. Happiness Score (2023)', // Add scene title
             data: dataByYear[2023],
             x: 'healthy_life_expectancy',
